@@ -12,6 +12,7 @@ config.read("config.ini")
 kafka_host = config["KAFKA"]["HOST"]
 kafka_port = int(config["KAFKA"]["PORT"])
 kafka_topic = config["KAFKA"]["TOPIC"]
+kafka_group = config["KAFKA"]["GROUP"]
 
 smtp_host = config['SMTP']['HOST']
 smtp_port = int(config['SMTP']['PORT'])
@@ -21,8 +22,8 @@ email_password = config['EMAIL']['PASSWORD']
 
 kafka_conf = {
     'bootstrap.servers': f'{kafka_host}:{kafka_port}',
-    'group.id': 'my_group',
-    'auto.offset.reset': 'earliest'
+    'group.id': kafka_group,
+    'auto.offset.reset': 'latest'
 }
 consumer = Consumer(kafka_conf)
 consumer.subscribe([kafka_topic])
@@ -79,7 +80,7 @@ async def listen_kafka():
                 continue
 
             msg_str = msg.value().decode("utf-8")
-            print("Received message")
+            print("Message received")
             email, prepared_message = get_email_address_and_prepared_message(msg_str)
 
             await send_message(email, prepared_message)
