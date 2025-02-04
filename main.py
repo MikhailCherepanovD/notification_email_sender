@@ -93,4 +93,5 @@ async def listen_kafka():
 async def main():
     await listen_kafka()
 
+print("Email consumer was launched.")
 asyncio.run(main())
