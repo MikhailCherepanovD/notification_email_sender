@@ -3,6 +3,8 @@ import smtplib
 import configparser
 import asyncio
 import json
+import signal
+import sys
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -70,9 +72,9 @@ def get_email_address_and_prepared_message(msg: str) -> tuple:
 
 
 async def listen_kafka():
-    try:
-        while True:
-            msg = consumer.poll(timeout=1.0)  # читаем сообщение
+    while True:
+        try:
+            msg = consumer.poll(timeout=2.0)  # читаем сообщение
             if msg is None:
                 continue
             if msg.error():
@@ -84,14 +86,19 @@ async def listen_kafka():
             email, prepared_message = get_email_address_and_prepared_message(msg_str)
 
             await send_message(email, prepared_message)
+        except Exception as e:
+            print("Error in listen_kafka:", e)
 
-    except Exception as e:
-        print("Error in listen_kafka:", e)
-    finally:
-        consumer.close()
+
+def shutdown_signal_handler(sig, frame):
+    print("Shutting down...")
+    consumer.close()
+    sys.exit(0)
+
+signal.signal(signal.SIGINT, shutdown_signal_handler)
 
 async def main():
     await listen_kafka()
-
-print("Email consumer was launched.")
-asyncio.run(main())
+if __name__ == "__main__":
+    print("Email consumer was launched.")
+    asyncio.run(main())
