@@ -5,6 +5,7 @@ import asyncio
 import json
 import signal
 import sys
+import logging
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 
@@ -74,6 +75,7 @@ def get_email_address_and_prepared_message(msg: str) -> tuple:
 async def listen_kafka():
     while True:
         try:
+            print("Listen kafka")
             msg = consumer.poll(timeout=2.0)  # читаем сообщение
             if msg is None:
                 continue
@@ -100,5 +102,6 @@ signal.signal(signal.SIGINT, shutdown_signal_handler)
 async def main():
     await listen_kafka()
 if __name__ == "__main__":
+    logging.info("Этот лог будет виден в docker logs")
     print("Email consumer was launched.")
     asyncio.run(main())
